@@ -1,0 +1,170 @@
+---
+title: "STAT 5014 Homework 3"
+author: "Samantha Sunshine"
+date: "9/18/17"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lintr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(Deriv)
+library(animation)
+library(plyr)
+library(pander)
+setwd("C:/Users/ssuns/Documents/2017 Fall/Statistical Programming/STAT_5014_Homework")
+```
+
+# Problem 4
+
+The programming style guides seem very useful for making R documents look nicer and more readable. There are different suggestions for the same types of formatting, which enables us to choose the style that we like the best. Specifically for me, I want to add more spacing and indentions between pieces of code to help make it more readable to other people.
+
+# Problem 5
+
+```{r, echo=FALSE, include=FALSE}
+lint(filename="C:/Users/ssuns/Documents/2017 Fall/Statistical Programming/STAT_5014_Homework/02_data_munging_summarizing_R_git/HW2_Sunshine_Samantha.Rmd")
+```
+
+Lint showed me that I need to change the spacing I use around operators such as "<-" and "=". I also should have a space after all commas and keep all variable and function names in lowercase letters.
+
+# Problem 6
+
+```{r, echo = FALSE}
+observe <- readRDS("C:/Users/ssuns/Documents/2017 Fall/Statistical Programming/STAT_5014_Homework/03_good_programming_R_functions/HW3_data.rds")
+mean <- data.frame( )
+mean2 <- data.frame( )
+sd <- data.frame( )
+sd2 <- data.frame( )
+mean_sd_cor <- data.frame( )
+for(i in 1:13){
+  mean_dev1 <- mean(filter(observe, Observer == i)[, "dev1"])
+  mean_dev2 <- mean(filter(observe, Observer == i)[, "dev2"])
+  sd_dev1 <- sd(filter(observe, Observer == i)[, "dev1"])
+  sd_dev2 <- sd(filter(observe, Observer == i)[, "dev2"])
+  cor_dev <- cor(filter(observe, Observer == i)[, "dev1"], filter(observe, Observer == i)[, "dev2"])
+  mean <- rbind(mean, mean_dev1)
+  mean2 <- rbind(mean2, mean_dev2)
+  sd <- rbind(sd, sd_dev1)
+  sd2 <- rbind(sd2, sd_dev2)
+  mean_sd_cor <- cbind(mean, mean2, sd, sd2, cor_dev)
+}
+colnames(mean_sd_cor) <- c("Mean 1", "Mean 2", "Standard Deviation 1", "Standard Deviation 2", "Correlation Coefficient")
+```
+
+```{r, echo = FALSE, include = TRUE, comment = NA, warning = NA, out.width="50%"}
+knitr::kable(mean_sd_cor, caption = "Observers Data")
+
+boxplot(mean, mean2, xlab = "Mean 1", ylab = "Mean 2", main = "Boxplot of the Means")
+
+violin <- ggplot(mean_sd_cor, aes(sd, sd2))
+violin + geom_violin(scale = "count") + ggtitle("Standard Deviation Violin Plot")
+#Couldn't get rid of the warning message. I tried changing the scale, making comment = NA and warning = NA, and nothing happened.
+```
+
+# Problem 7
+
+```{r, echo = FALSE}
+url <- "http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/BloodPressure.dat"
+
+bloodpressure_raw <- read.table(url, header = F, skip = 2, fill = T, stringsAsFactors = F)
+
+bloodpressure_tidy <- bloodpressure_raw[, -5]
+
+colnames(bloodpressure_tidy) <- c("Day", "Device 1", "Device 2", "Device 3", "Doctor 1", "Doctor 2", "Doctor 3")
+```
+
+```{r, echo = FALSE, include = TRUE}
+knitr::kable(bloodpressure_tidy, caption = "Blood Pressure Data")
+```
+
+First, I made "url" the name of the link to the blood pressure data.
+```{r, echo = TRUE}
+url <- "http://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/BloodPressure.dat"
+```
+
+Next, I named a table "bloodpressure_raw", which included the data from url with no header and skipping the first two lines.
+```{r, echo = TRUE}
+bloodpressure_raw <- read.table(url, header = F, skip = 2, fill = T, stringsAsFactors = F)
+```
+
+Then I named a new dataset "bloodpressure_tidy" which excluded column 5 from "bloodpressure_raw".
+```{r, echo = TRUE}
+bloodpressure_tidy <- bloodpressure_raw[, -5]
+```
+
+The last step was to rename the columns.
+```{r, echo = TRUE}
+colnames(bloodpressure_tidy) <- 
+  c("Day", "Device 1", "Device 2", "Device 3", "Doctor 1", "Doctor 2", "Doctor 3")
+```
+
+```{r, echo = FALSE, include = TRUE}
+knitr::kable(summary(bloodpressure_tidy), caption = "Blood Pressure Data SUmmary")
+```
+
+# Problem 8
+
+```{r, echo = FALSE, include = TRUE, out.width="35%"}
+newton.method(FUN = function(x) 3^x - sin(x) + cos(5*x), init = 2, rg = c(-3, 2), tol = .5, interact = FALSE, col.lp = c("blue", "red", "black"), main = "Newton's Method", ylab = "f(x)")
+```
+
+# Problem 9
+
+```{r,echo=FALSE, include=TRUE,comment=NA}
+Car_Gebreken_raw <- read.csv("C:/Users/ssuns/Documents/2017 Fall/Statistical Programming/STAT_5014_Homework/Open_Data_RDW__Gebreken.csv",stringsAsFactors = F, nrows=200, header=T,quote = '"')
+Car_Geconstat_raw <- read.csv("C:/Users/ssuns/Documents/2017 Fall/Statistical Programming/STAT_5014_Homework/Open_Data_RDW__Geconstateerde_Gebreken.csv", stringsAsFactors = F, nrows=200, header=T)
+Car_Person_raw <- read.csv("C:/Users/ssuns/Documents/2017 Fall/Statistical Programming/STAT_5014_Homework/Personenauto_basisdata.csv",stringsAsFactors = F, nrows=200, header=T)
+#read.csv isn't the best option for these large datasets. I should have used something else, although it loaded just fine on my computer.
+
+Car_Gebreken_raw.colclass <- sapply(Car_Gebreken_raw, class)
+Car_Geconstat_raw.colclass <- sapply(Car_Geconstat_raw, class)
+Car_Person_raw.colclass <- sapply(Car_Person_raw, class)
+
+car_data <- cbind(Car_Gebreken_raw, Car_Geconstat_raw, Car_Person_raw)
+car_data <- car_data[, -c(3:6)]
+car_data <- car_data[, -c(4:11)]
+car_data <- car_data[, -c(6:14)]
+#I should find a better way to remove all of these unwanted columns.
+
+colnames(car_data) <- c("Defect Code", "Date", "License Plate", "Make", "Model")
+car_data <- arrange(car_data, desc(Date))
+car_data <- car_data[1:29, -2]
+
+distinct_makes <- distinct(car_data, Make)
+
+frequent_defects <- count(car_data[, 3])
+frequent_defects <- frequent_defects[c(9, 10, 14, 15), ]
+
+cor_make <- lm(count(car_data[, 3]))
+
+cor_model <- lm(count(car_data[, 4]))
+```
+
+```{r, echo=FALSE,include=TRUE}
+knitr::kable(car_data, caption = "Car Data")
+knitr::kable(summary(car_data), caption = "Car Summary Data")
+```
+
+There are 16 unique makes of cars.
+```{r, echo=FALSE,include=TRUE}
+knitr::kable(distinct_makes, caption = "Makes of Cars")
+```
+
+There are no two defects that are reported twice in my data. I created a table of the 4 car makes with the most defects. One make had 5 defects, three makes had 3 defects, so I omitted the makes with 2 or 1 defects.
+```{r, echo=FALSE,include=TRUE}
+knitr::kable(frequent_defects, caption = "Number of Defects in Makes")
+```
+
+Below is a table of the correlation relationship in the number of defects by each make.
+```{r, echo=FALSE,include=TRUE}
+pander(cor_make)
+```
+
+Below is the same table, but this time for each model.
+```{r, echo=FALSE,include=TRUE}
+pander(cor_model)
+```
+
