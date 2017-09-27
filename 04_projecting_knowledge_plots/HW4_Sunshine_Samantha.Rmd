@@ -1,0 +1,61 @@
+---
+title: "STAT 5014 Homework 4"
+author: "Samantha Sunshine"
+date: "9/27/17"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(xlsx)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(lattice)
+library(corrplot)
+```
+
+# Problem 3
+
+Roger Peng says the focus of exploratory data analysis is to identify relationships between variables, test hypotheses, and to identify and solve problems occurring with data. Another goal would be to summarize data and look for patterns.  
+
+# Problem 4
+
+```{r, echo = FALSE, comment = NA}
+hw4_data_1 <- read.xlsx("HW4_data.xlsx", sheetIndex = 1)
+hw4_data_2 <- read.xlsx("HW4_data.xlsx", sheetIndex = 2)
+hw4_data <- data.frame(rbind(hw4_data_1, hw4_data_2))
+hw4_data <- hw4_data %>%
+  arrange(block)
+
+knitr::kable(summary(hw4_data), caption = "Data Summary")
+
+# names(hw4_data)
+# dim(hw4_data)
+# str(hw4_data)
+```
+
+The columns in the dataset, block, depth, and phosphate, are all numeric variables, and it is a 1846x3 matrix. 
+
+```{r, echo = FALSE}
+par(mfrow = c(2, 2))
+hist(hw4_data$phosphate, main = "Phosphate", xlab = "Phosphate")
+hist(hw4_data$depth, main = "Depth", xlab = "Depth")
+plot(hw4_data$depth, hw4_data$phosphate, main = "Depth vs. Phosphate", xlab = "Depth", ylab = "Phosphate")
+```
+
+```{r, echo = FALSE}
+p4 <- ggplot(hw4_data, aes(x = depth, y = phosphate)) + geom_point(shape = 1)
+p4 + facet_wrap( ~ hw4_data$block, ncol = 4)
+```
+
+$~$  
+$~$  
+
+```{r, echo = FALSE, comment = NA}
+hw4_cor <- cor(hw4_data)
+hw4_cor
+corrplot(hw4_cor, method = "circle", bg = "black")
+```
+
+
