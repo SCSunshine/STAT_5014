@@ -17,7 +17,8 @@ library(corrplot)
 
 # Problem 3
 
-Roger Peng says the focus of exploratory data analysis is to identify relationships between variables, test hypotheses, and to identify and solve problems occurring with data. Another goal would be to summarize data and look for patterns.  
+Roger Peng says the focus of exploratory data analysis is to identify relationships between variables, test hypotheses, and to identify and solve problems occurring with data. Another goal would be to summarize data and look for patterns. 
+
 
 # Problem 4
 
