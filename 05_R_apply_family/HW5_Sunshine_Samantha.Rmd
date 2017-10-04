@@ -1,0 +1,136 @@
+---
+title: "STAT 5014 Homework 5"
+author: "Samantha Sunshine"
+date: "October 3, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+```
+
+# Problem 3
+
+If the figure is of data represented in a table, it should contain tidy data with proper labels on the rows and columns. If the figure is a graph, it should have proper axis labels, color and/or shading corresponding to different parts of the graph, a visually appealing layout, and an easy way to interpret what the plot is trying to show for people who might not be familiar with the subject.
+
+# Problem 4
+
+```{r, echo = FALSE}
+#computes the proportion of successes in a vector consisting of 0s and 1s
+prop_success <- function(x){
+  sum(x)/length(x)
+}
+
+#matrix simulating 10 flips of a coin
+set.seed(12345)
+P4b_data <- matrix(rbinom(10, 1, prob = (30:40)/100), nrow = 10, ncol = 10)
+
+#apply computes the proportion of successes in each column
+apply(P4b_data, 2, prop_success)
+
+#apply computes the proportion of successes in each row
+apply(P4b_data, 1, prop_success)
+
+#given an input of a probability, rbinom gives a vector with outcomes of 10 coin flips
+prob <- function(x){
+  rbinom(10, 1, prob = x)
+}
+
+#vector of probabilities between .3 and .4
+prob_vec <- seq(0.3, 0.39, 0.01)
+
+#sapply gives a matrix of 0s and 1s with the appropriate probabilities
+prob_mat <- sapply(prob_vec, prob)
+
+#computes the marginal successes for each column of the matrix
+prop_success <- function(x){
+  sum(x)/length(x)
+}
+
+apply(prob_mat, 2, prop_success)
+```
+
+The proportion of successes in each column is the same, 0.6. The proportion of successes in each row is either 0 or 1. 
+The last row is the vector of marginal success of each column of our matrix.
+
+# Problem 5
+
+```{r, echo = FALSE}
+url <- "http://www2.isye.gatech.edu/~jeffwu/book/data/starch.dat"
+starch_raw <- read.table(url, header = T, stringsAsFactors = F)
+
+#plot of starch hickness vs. strength
+plot(starch_raw$thickness, starch_raw$strength, xlab = "Thickness", ylab = "Strength", main = "Starch Thickness vs, Strength")
+
+#separating each type of starch
+starch_ca <- starch_raw[1:13, ]
+starch_co <- starch_raw[14:32, ]
+starch_po <- starch_raw[33:49, ]
+
+#means of strength each type of starch
+strength_ca_mean <- mean(starch_ca$strength)
+strength_co_mean <- mean(starch_co$strength)
+strength_po_mean <- mean(starch_po$strength)
+strength_means <- data.frame(c("CA", "CO", "PO"), c(strength_ca_mean, strength_co_mean, strength_po_mean))
+colnames(strength_means) <- c("starch", "strength")
+
+#means thickness of each type of starch
+thickness_ca_mean <- mean(starch_ca$thickness)
+thickness_co_mean <- mean(starch_co$thickness)
+thickness_po_mean <- mean(starch_po$thickness)
+thickness_means <- data.frame(c("CA", "CO", "PO"), c(thickness_ca_mean, thickness_co_mean, thickness_po_mean))
+colnames(thickness_means) <- c("starch", "thickness")
+
+#bar plots of the means in strength and thickness of each starch
+par(mfrow = c(2, 2))
+ggplot(strength_means, aes(x = starch, y = strength)) + geom_bar(stat = "identity") + ggtitle("Mean Strength of Different Starches")
+ggplot(thickness_means, aes(x = starch, y = thickness)) + geom_bar(stat = "identity") + ggtitle("Mean Thickness of Different Starches")
+```
+
+# Problem 6
+
+```{r, echo = FALSE}
+#we are grabbing a SQL set from here
+#http://www.farinspace.com/wp-content/uploads/us_cities_and_states.zip
+
+# download the files, looks like it is a .zip
+library(downloader)
+download("http://www.farinspace.com/wp-content/uploads/us_cities_and_states.zip", dest = "us_cities_states.zip")
+unzip("us_cities_states.zip", exdir = "C:/Users/ssuns/Documents/2017 Fall/Statistical Programming/STAT_5014_Homework")
+
+# read in data, looks like sql dump, blah 
+library(data.table) 
+states <- fread(input = "./us_cities_and_states/states.sql", skip = 23, sep = "'", sep2 = ",", header = F, select = c(2, 4))
+
+#read in data for cities
+cities <- fread(input = "./us_cities_and_states/cities_extended.sql", header = F, sep = "'", sep2 = ",")
+
+#matching the cities to only the states listed in "states"
+a <- states[["V4"]]
+b <- cities[["V4"]]
+city_state <- match(b, a) %>%
+  na.omit(city_state)
+
+#finding the number of cities per state represented
+city_count <- c(1:length(a))
+for (i in 1:length(a)){
+  city_count[i] <- length(which(city_state == i))
+}
+
+#making a table with the city count per state
+city_count_table <- cbind(states, city_count)
+print(city_count_table)
+
+#this counts the number of a certain letter in a given word
+letter_count <- data.frame(matrix(NA, nrow = length(a), ncol = 26))
+get_count <- function(letter, state_name){
+  d <- strsplit(state_name, "")[[1]]
+  e <- letter
+  f <- length(na.omit(match(d, e)))
+  return(f)
+}
+```
+
