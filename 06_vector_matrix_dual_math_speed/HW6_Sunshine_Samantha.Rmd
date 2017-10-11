@@ -1,0 +1,120 @@
+---
+title: "STAT 5014 Homework 6"
+author: "Samantha Sunshine"
+date: "10/11/17"
+output: html_notebook
+---
+
+# Problem 2
+
+```{r, echo = FALSE, eval=FALSE}
+set.seed(12345)
+y <- seq(from = 1, to = 100, length.out = 1e+08) + rnorm(1e+08)
+
+#calculates the sum of squares total for y
+time_a <- system.time(for(i in 1:100){
+  z <- sum((y[i] - mean(y))^2)
+})
+
+#vectors to calculate the sum of squares total for y
+ybar <- as.vector(mean(y))
+ssy <- sum((y-ybar)^2)
+time_b <- system.time(sum((y-ybar)^2))
+```
+
+(a) The sum of squares total for the sequence "y" using a for loop is `r z`. The system time for this operation is below.  
+
+```{r, echo = FALSE, include = TRUE, eval=TRUE}
+time_a
+```
+
+(b) The sum of squares total for the sequence "y" using vector operations is `r ssy`. The system time for this operation is below.  
+
+```{r, echo = FALSE, include = TRUE, eval=TRUE}
+time_b
+```
+
+
+# Problem 3
+
+```{r, echo = FALSE, eval=FALSE}
+set.seed(1256)
+theta <- as.matrix(c(1, 2), nrow = 2)
+x <- cbind(1, rep(1:10, 10))
+h <- x %*% theta + rnorm(100, 0, 0.2)
+
+theta_new <- as.matrix(c(0, 0), nrow = 2)
+alpha <- 0.01
+m <- length(h)
+t <- 0.1
+
+#while loop nested in for loop
+for(i in 1:length(h)){
+  while(abs(theta_new[1]-theta[1]) && abs(theta_new[2]-theta[2]) > t){
+    theta_new[1] <- theta[1] - alpha/m * sum(theta_new[1] + theta_new[2]*x[i] - h[i])
+    theta_new[2] <- theta[2] - alpha/m * sum((theta[1] + theta[2]*x[i] - h[i])*x[i])
+  }
+}
+
+#fitting the linear model for h and x
+lm_h_x <- lm(h~0+x)
+```
+
+The tolerance I used was $t=0.1$, and I made the step size $\alpha=0.01$.  
+The results from my loop are below.  
+
+```{r, echo=FALSE, include = TRUE, eval=TRUE}
+theta_new
+```
+
+The results from fitting the linear model are below.  
+
+```{r, echo=FALSE, include = TRUE, eval=TRUE}
+lm_h_x
+```
+
+The results from both are very similar. The linear model is very close to $x_1=1$ and $x_2=2$, and the results from my loop are close to the same numbers.  
+
+# Problem 4
+
+Instead of computing $\hat{\beta}=(X'X)^{-1}X'Y$, we should compute $(X'X)\beta=X'Y$ and solve for $\beta$. Inverting the matrix would give much larger residuals and error of $\beta$ than computing it this way. This computation would look like the following code.  
+
+```{r, echo=TRUE, eval=FALSE, include=TRUE}
+solve(t(X) %*% X, t(X) %*% Y)
+```
+
+# Problem 5
+
+```{r, echo = FALSE, eval=FALSE}
+set.seed(12456)
+G <- matrix(sample(c(0, 0.5, 1), size = 16000, replace = T), ncol = 10)
+R <- cor(G) 
+C <- kronecker(R, diag(1600)) 
+id <- sample(1:16000, size = 932, replace = F)
+q <- sample(c(0, 0.5, 1), size = 15068, replace = T) 
+A <- C[id, -id] 
+B <- C[-id, -id] 
+p <- runif(932, 0, 1)
+r <- runif(15068, 0, 1)
+C <- NULL  
+
+#compute y
+time_2 <- system.time(p + A%*%solve(B)%*%(q - r))
+y2 <- p + A%*%solve(B)%*%(q - r) 
+
+#size of A and B
+size_A <- object.size(A)
+size_B <- object.size(B)
+
+#simplifying computation of y2
+time_3 <- system.time(p+A%*%(q-r))
+y3 <- p+A%*%(q-r)
+```
+
+(a) The size of A is `r size_A` bytes, and B is `r size_B` bytes. When I timed the calculation with the system.time function, it gave me an error saying that it could not allocate a vector as large as the B matrix. However, I ran the code without the system.time function previously and it took over 10 minutes.  
+
+(b) The issue with computing this is the inverse of B. Matrix B is a block diagonal matrix with all 1s on the diagonal. This is the identity matrix, so A times the identity matrix is just A. We can eliminate the B inverse matrix all together because the inverse of the identity matrix is just the identity matrix. The time for computing $y=p+A(q-r)$ is shown below.   
+
+```{r, echo=FALSE, include = TRUE, eval=TRUE}
+time_3
+```
